@@ -15,15 +15,27 @@ import com.app.samplesv1.springbootmicroservicesmc.model.CatalogItem;
 import com.app.samplesv1.springbootmicroservicesmc.model.Movie;
 import com.app.samplesv1.springbootmicroservicesmc.model.Rating;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MCController.
+ */
 @RestController
 @RequestMapping("/catalog")
 public class MCController {
 	
+	/** The logger. */
 	Logger logger = Logger.getLogger(MCController.class.getName());
 	
+	/** The rest template. */
 	@Autowired
 	RestTemplate restTemplate;
 	
+	/**
+	 * Gets the catalog.
+	 *
+	 * @param userId the user id
+	 * @return the catalog
+	 */
 	@RequestMapping("/{userId}")
 	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
 		List<CatalogItem> catalogItems = new ArrayList<CatalogItem>();
