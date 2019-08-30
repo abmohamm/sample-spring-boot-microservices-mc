@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.app.samplesv1.springbootmicroservicesmc.model.CatalogItem;
 import com.app.samplesv1.springbootmicroservicesmc.model.Movie;
 import com.app.samplesv1.springbootmicroservicesmc.model.Rating;
+import com.app.samplesv1.springbootmicroservicesmc.model.UserRating;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -30,6 +32,10 @@ public class MCController {
 	@Autowired
 	RestTemplate restTemplate;
 	
+	/** The web client builder. */
+	@Autowired
+	WebClient webClient;
+	
 	/**
 	 * Gets the catalog.
 	 *
@@ -41,12 +47,19 @@ public class MCController {
 		List<CatalogItem> catalogItems = new ArrayList<CatalogItem>();
 		Movie movie = null;
 		
-		//get all the rated movie id's
-		List<Rating> ratings = Arrays.asList(new Rating("1234",4),
-											 new Rating("5678",3)); 
+		UserRating userRating = restTemplate.getForObject("http://localhost:8083/ratingsdata/users/"+userId, UserRating.class);
 		
-		for(Rating rating : ratings) {
+		//get all the rated movie id's
+		/*List<Rating> ratings = Arrays.asList(new Rating("1234",4),
+											 new Rating("5678",3)); */
+		
+		for(Rating rating : userRating.getRatings()) {
 			movie = restTemplate.getForObject("http://localhost:8082/movies/"+rating.getMovieId(), Movie.class);
+					
+			/*movie = webClient.get()
+					 		 .uri("http://localhost:8082/movies/"+rating.getMovieId())
+					 		 .retrieve()
+					 		 .bodyToMono(Movie.class).block();*/
 			catalogItems.add(new CatalogItem(movie.getName(),movie.getDescription(),rating.getRating()));
 		}
 		
