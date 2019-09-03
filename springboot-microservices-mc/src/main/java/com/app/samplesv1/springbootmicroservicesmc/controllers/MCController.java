@@ -16,6 +16,8 @@ import com.app.samplesv1.springbootmicroservicesmc.model.CatalogItem;
 import com.app.samplesv1.springbootmicroservicesmc.model.Movie;
 import com.app.samplesv1.springbootmicroservicesmc.model.Rating;
 import com.app.samplesv1.springbootmicroservicesmc.model.UserRating;
+import com.app.samplesv1.springbootmicroservicesmc.services.MovieInfoService;
+import com.app.samplesv1.springbootmicroservicesmc.services.UserRatingInfo;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 // TODO: Auto-generated Javadoc
@@ -37,6 +39,12 @@ public class MCController {
 	@Autowired
 	WebClient webClient;
 	
+	@Autowired
+	MovieInfoService movieInfoService;
+	
+	@Autowired
+	UserRatingInfo userRatingService;
+	
 	/**
 	 * Gets the catalog.
 	 *
@@ -44,25 +52,21 @@ public class MCController {
 	 * @return the catalog
 	 */
 	@RequestMapping("/{userId}")
-	@HystrixCommand(fallbackMethod = "getFallbackCatalog")
+	//@HystrixCommand(fallbackMethod = "getFallbackCatalog")
 	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
 		List<CatalogItem> catalogItems = new ArrayList<CatalogItem>();
-		Movie movie = null;
-		
-		UserRating userRating = restTemplate.getForObject("http://localhost:8083/ratingsdata/users/"+userId, UserRating.class);
+		UserRating userRating = userRatingService.getUserRating(userId);
 		
 		//get all the rated movie id's
 		/*List<Rating> ratings = Arrays.asList(new Rating("1234",4),
 											 new Rating("5678",3)); */
 		
 		for(Rating rating : userRating.getRatings()) {
-			movie = restTemplate.getForObject("http://localhost:8082/movies/"+rating.getMovieId(), Movie.class);
-					
 			/*movie = webClient.get()
 					 		 .uri("http://localhost:8082/movies/"+rating.getMovieId())
 					 		 .retrieve()
 					 		 .bodyToMono(Movie.class).block();*/
-			catalogItems.add(new CatalogItem(movie.getName(),movie.getDescription(),rating.getRating()));
+			catalogItems.add(movieInfoService.getCatalogItem(rating));
 		}
 		
 		//for each movie id, call the movie info service to get the movie details
@@ -79,9 +83,9 @@ public class MCController {
 		
 		return catalogItems;		
 	}
-	
-	public List<CatalogItem> getFallbackCatalog(@PathVariable("userId") String userId){
-		return Arrays.asList(new CatalogItem("No Movie","",0));
-	}
+
+//	public List<CatalogItem> getFallbackCatalog(@PathVariable("userId") String userId){
+//		return Arrays.asList(new CatalogItem("No Movie","",0));
+//	}
 
 }
