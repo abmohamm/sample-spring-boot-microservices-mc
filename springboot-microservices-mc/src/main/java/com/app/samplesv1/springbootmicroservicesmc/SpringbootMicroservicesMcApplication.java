@@ -2,8 +2,11 @@ package com.app.samplesv1.springbootmicroservicesmc;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -12,6 +15,8 @@ import org.springframework.web.reactive.function.client.WebClient;
  * The Class SpringbootMicroservicesMcApplication.
  */
 @SpringBootApplication
+@EnableEurekaClient
+@EnableCircuitBreaker
 public class SpringbootMicroservicesMcApplication {
 
 	/**
@@ -29,8 +34,11 @@ public class SpringbootMicroservicesMcApplication {
 	 * @return the rest template
 	 */
 	@Bean
+	@LoadBalanced
 	public RestTemplate restTemplate() {
-	    return new RestTemplate();
+		HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+		clientHttpRequestFactory.setConnectTimeout(3000);
+	    return new RestTemplate(clientHttpRequestFactory);
 	}
 	
 	/**

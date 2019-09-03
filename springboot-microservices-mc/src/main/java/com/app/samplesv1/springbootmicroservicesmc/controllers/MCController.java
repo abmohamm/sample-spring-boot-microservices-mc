@@ -16,6 +16,7 @@ import com.app.samplesv1.springbootmicroservicesmc.model.CatalogItem;
 import com.app.samplesv1.springbootmicroservicesmc.model.Movie;
 import com.app.samplesv1.springbootmicroservicesmc.model.Rating;
 import com.app.samplesv1.springbootmicroservicesmc.model.UserRating;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -43,6 +44,7 @@ public class MCController {
 	 * @return the catalog
 	 */
 	@RequestMapping("/{userId}")
+	@HystrixCommand(fallbackMethod = "getFallbackCatalog")
 	public List<CatalogItem> getCatalog(@PathVariable("userId") String userId){
 		List<CatalogItem> catalogItems = new ArrayList<CatalogItem>();
 		Movie movie = null;
@@ -76,6 +78,10 @@ public class MCController {
 //		catalogItems.add(new CatalogItem("dabangg","hindi",6));
 		
 		return catalogItems;		
+	}
+	
+	public List<CatalogItem> getFallbackCatalog(@PathVariable("userId") String userId){
+		return Arrays.asList(new CatalogItem("No Movie","",0));
 	}
 
 }
